@@ -1,4 +1,8 @@
 from flask import Blueprint
+from ..model.idea import Idea
+from flask import request, jsonify
+from db import db
+
 
 idea_api = Blueprint('idea_api', __name__)
 
@@ -12,10 +16,19 @@ def get_idea(idea_id):
 
 @idea_api.route('/idea', methods=['POST'])
 def create_idea():
+    print('HOLAAA')
+    data = request.json
+    name = data['name']
+    summary = data['summary']
+    description = data['description']
+    image_uri = data['image_uri']
+    idea = Idea(name=name, summary=summary, description=description, image_uri=image_uri)
+    db.session.add(idea)
+    db.session.commit()
     # write database
     # notify user service
     # notify search service
-    raise NotImplementedError()
+    return jsonify(ideaId=idea.id, ideaName=idea.name, status="Created")
 
 
 @idea_api.route('/idea/<idea_id>', methods=['PUT'])
