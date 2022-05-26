@@ -14,7 +14,7 @@ WORKDIR /flask_app
 
 ENV FLASK_ENV=development
 
-CMD flask run --host=0.0.0.0
+CMD python3 app.py
 
 #CMD gunicorn --workers $WORKERS \
 #  --threads $THREADS \

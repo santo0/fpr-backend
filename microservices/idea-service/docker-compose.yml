@@ -33,12 +33,20 @@ services:
 
   postgres:
     image: postgres
+    restart: always
     environment:
-      - POSTGRES_HOST_AUTH_METHOD=trust
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
     ports:
-      - "5433:5433"
+      - '5432:5432'
+    volumes: 
+      - db:/var/lib/postgresql/idea_data
 
 networks: 
   default: 
     external: 
       name: fpr-test-network
+
+volumes:
+  db:
+    driver: local
