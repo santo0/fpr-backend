@@ -1,17 +1,24 @@
+import json
 from flask import Blueprint
-from ..model.idea import Idea
+from ..models import Idea
 from flask import request, jsonify
 from db import db
-
+from ..service.idea_service import IdeaService
+from ..interfaces import IdeaInterface
 
 idea_api = Blueprint('idea_api', __name__)
 
 
 @idea_api.route('/idea/<idea_id>', methods=['GET'])
 def get_idea(idea_id):
+    idea = IdeaService.get_by_id(int(idea_id))
     # read database
     # notify user logging service via event/message broker
-    raise NotImplementedError()
+    return jsonify(id=idea.id,
+                   name=idea.name,
+                   summary=idea.summary,
+                   description=idea.description,
+                   image_uri=idea.image_uri)
 
 
 @idea_api.route('/idea', methods=['POST'])
@@ -22,7 +29,8 @@ def create_idea():
     summary = data['summary']
     description = data['description']
     image_uri = data['image_uri']
-    idea = Idea(name=name, summary=summary, description=description, image_uri=image_uri)
+    idea = Idea(name=name, summary=summary,
+                description=description, image_uri=image_uri)
     db.session.add(idea)
     db.session.commit()
     # write database
