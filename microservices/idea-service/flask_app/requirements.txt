@@ -1,0 +1,7 @@
+Flask
+celery[mongodb]
+pymongo
+boto3
+SQLAlchemy
+psycopg2
+
