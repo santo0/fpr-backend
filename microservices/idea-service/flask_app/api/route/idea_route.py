@@ -4,7 +4,6 @@ from ..models import Idea
 from flask import request, jsonify
 from db import db
 from ..service.idea_service import IdeaService
-from ..interfaces import IdeaInterface
 
 idea_api = Blueprint('idea_api', __name__)
 
@@ -31,8 +30,7 @@ def create_idea():
     image_uri = data['image_uri']
     idea = Idea(name=name, summary=summary,
                 description=description, image_uri=image_uri)
-    db.session.add(idea)
-    db.session.commit()
+    idea = IdeaService.create_idea(idea)
     # write database
     # notify user service
     # notify search service
@@ -44,16 +42,28 @@ def edit_idea(idea_id):
     # write database
     # notify user service
     # notify search service
-    raise NotImplementedError()
+    data = request.json
+    name = data['name']
+    summary = data['summary']
+    description = data['description']
+    image_uri = data['image_uri']
+    idea = Idea(id=idea_id, name=name, summary=summary,
+                description=description, image_uri=image_uri)
+    idea = IdeaService.update_idea(idea)
+
+    return jsonify(ideaId=idea.id, ideaName=idea.name, status="Updated")
 
 
 @idea_api.route('/idea/<idea_id>', methods=['DELETE'])
 def delete_idea(idea_id):
     # write database
-    # notify user service
+    # notify user service << why?? should user service know??
     # notify search service
     # notify feed service
-    raise NotImplementedError()
+    idea = Idea(id=idea_id)
+    idea = IdeaService.delete_idea(idea)
+
+    return jsonify(ideaId=idea.id, status="Deleted")
 
 
 @idea_api.route('/idea/<idea_id>/follow', methods=['PUT'])

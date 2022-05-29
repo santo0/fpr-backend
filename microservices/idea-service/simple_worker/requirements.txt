@@ -1,5 +1,4 @@
-celery[mongodb]
-boto3
-pymongo
+pika
 SQLAlchemy
 psycopg2
+python-dotenv

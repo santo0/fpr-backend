@@ -1,8 +1,8 @@
 Flask
-celery[mongodb]
 pymongo
 boto3
 SQLAlchemy
 psycopg2
 python-dotenv
 Flask-SQLAlchemy
+pika

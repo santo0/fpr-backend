@@ -1,18 +1,18 @@
 FROM python:3-alpine
 
+ENV PYTHONUNBUFFERED=1
+
 # layer caching for faster builds
 COPY requirements.txt /
 RUN \
- apk add --no-cache postgresql-libs && \
- apk add --no-cache --virtual .build-deps gcc musl-dev postgresql-dev && \
- python3 -m pip install -r requirements.txt --no-cache-dir && \
- apk --purge del .build-deps
+ apk add netcat-openbsd && \
+ python3 -m pip install -r requirements.txt --no-cache-dir
 
 #COPY app.py /app.py
 ADD . /simple_worker
 WORKDIR /simple_worker
 
-RUN python3 tasks.py
+ENTRYPOINT ["python3", "tasks.py"]
 
 #-Q celery_worker
 #ENTRYPOINT ['celery','-A','test_celery', 'worker', '--loglevel=info']

@@ -1,20 +1,34 @@
-import time
-from celery import Celery
-from celery.utils.log import get_task_logger
-
-logger = get_task_logger(__name__)
+import pika
 
 
-backend_uri = 'db+postgresql://localhost:5433/postgres'
+def handle_delivery(channel, method, header, body):
+    """Called when we receive a message from RabbitMQ"""
+    print("Message received!")
+    print("Received: ", body)
+    channel.basic_ack(delivery_tag=method.delivery_tag)
 
-app = Celery('tasks',
-             broker='amqp://admin:mypass@rabbit:5672',
-                    backend='mongodb://mongodb_container:27017/mydb')
+
+def main():    
+    return
+    connection_params = pika.ConnectionParameters(
+        host='amqp://admin:mypass@127.0.0.1:5672')
+    connection = pika.BlockingConnection(connection_params)
+    queue = 'index-seach-idea'
+    channel = connection.channel()
+    channel.queue_declare(queue=queue)
+    channel.queue_bind(
+        exchange="idea",
+        queue=queue,
+        routing_key="idea.index")
+    channel.basic_consume(queue, handle_delivery)
+
+    print('Subscribed to ' + queue + ', waiting for messages...')
+    try:
+        channel.start_consuming()
+    except KeyboardInterrupt:
+        connection.close()
 
 
-@app.task()
-def longtime_add(x, y):
-    logger.info('Got Request - Starting work ')
-    time.sleep(4)
-    logger.info('Work Finished ')
-    return x + y
+if __name__ == '__main__':
+    main()
+

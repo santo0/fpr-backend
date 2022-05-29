@@ -9,10 +9,15 @@ RUN \
  apk --purge del .build-deps
 
 #COPY app.py /app.py
-ADD . /simple_worker
-WORKDIR /simple_worker
+ADD . /flask_app
+WORKDIR /flask_app
 
-RUN python3 tasks.py
+ENV FLASK_ENV=development
 
-#-Q celery_worker
-#ENTRYPOINT ['celery','-A','test_celery', 'worker', '--loglevel=info']
+CMD python3 app.py
+
+#CMD gunicorn --workers $WORKERS \
+#  --threads $THREADS \
+#  --bind 0.0.0.0:$PORT_APP \
+#  --log-level DEBUG \
+#  app:app
