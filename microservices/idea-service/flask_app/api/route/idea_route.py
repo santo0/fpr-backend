@@ -14,41 +14,32 @@ def get_idea(idea_id):
     # read database
     # notify user logging service via event/message broker
     return jsonify(id=idea.id,
+                   ownerId=idea.ownerId,
                    name=idea.name,
                    summary=idea.summary,
                    description=idea.description,
-                   image_uri=idea.image_uri)
+                   image_uri=idea.image_uri,
+                   category=idea.category)
 
 
 @idea_api.route('/idea', methods=['POST'])
 def create_idea():
-    print('HOLAAA')
     data = request.json
-    name = data['name']
-    summary = data['summary']
-    description = data['description']
-    image_uri = data['image_uri']
-    idea = Idea(name=name, summary=summary,
-                description=description, image_uri=image_uri)
+    idea = Idea(**data)
     idea = IdeaService.create_idea(idea)
     # write database
-    # notify user service
     # notify search service
+    # notify feed service
     return jsonify(ideaId=idea.id, ideaName=idea.name, status="Created")
 
 
 @idea_api.route('/idea/<idea_id>', methods=['PUT'])
 def edit_idea(idea_id):
     # write database
-    # notify user service
     # notify search service
+    # notify feed service
     data = request.json
-    name = data['name']
-    summary = data['summary']
-    description = data['description']
-    image_uri = data['image_uri']
-    idea = Idea(id=idea_id, name=name, summary=summary,
-                description=description, image_uri=image_uri)
+    idea = Idea(id=idea_id, **data)
     idea = IdeaService.update_idea(idea)
 
     return jsonify(ideaId=idea.id, ideaName=idea.name, status="Updated")
@@ -57,7 +48,6 @@ def edit_idea(idea_id):
 @idea_api.route('/idea/<idea_id>', methods=['DELETE'])
 def delete_idea(idea_id):
     # write database
-    # notify user service << why?? should user service know??
     # notify search service
     # notify feed service
     idea = Idea(id=idea_id)
@@ -69,7 +59,6 @@ def delete_idea(idea_id):
 @idea_api.route('/idea/<idea_id>/follow', methods=['PUT'])
 def follow_idea(idea_id):
     # write database
-    # notify user service
     # notify user logging service
     # notify feed service
     # notify notification service
@@ -79,7 +68,6 @@ def follow_idea(idea_id):
 @idea_api.route('/idea/<idea_id>/unfollow', methods=['DELETE'])
 def unfollow_idea(idea_id):
     # write database
-    # notify user service
     # notify feed service
     # notify user logging service
     raise NotImplementedError()
