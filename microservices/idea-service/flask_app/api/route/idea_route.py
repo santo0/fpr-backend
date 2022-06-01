@@ -1,7 +1,6 @@
-import json
 from flask import Blueprint
 from ..models import Idea
-from flask import request, jsonify
+from flask import request, jsonify, abort
 from db import db
 from ..service.idea_service import IdeaService
 
@@ -13,23 +12,27 @@ def get_idea(idea_id):
     idea = IdeaService.get_by_id(int(idea_id))
     # read database
     # notify user logging service via event/message broker
-    return jsonify(id=idea.id,
+    if idea:
+        return jsonify(id=idea.id,
                    ownerId=idea.ownerId,
                    name=idea.name,
                    summary=idea.summary,
                    description=idea.description,
                    image_uri=idea.image_uri,
                    category=idea.category)
+    else:
+        abort(404) 
 
 
+    # write database
+    # notify search service
+    # notify feed service
 @idea_api.route('/idea', methods=['POST'])
 def create_idea():
     data = request.json
     idea = Idea(**data)
     idea = IdeaService.create_idea(idea)
-    # write database
-    # notify search service
-    # notify feed service
+
     return jsonify(ideaId=idea.id, ideaName=idea.name, status="Created")
 
 

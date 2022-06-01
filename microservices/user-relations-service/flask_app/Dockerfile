@@ -5,11 +5,9 @@ COPY requirements.txt /
 RUN \
  python3 -m pip install -r requirements.txt --no-cache-dir 
 
-ENV PYTHONUNBUFFERED=1
-
+#COPY app.py /app.py
 ADD . /flask_app
 WORKDIR /flask_app
-
 
 ENV FLASK_ENV=development
 

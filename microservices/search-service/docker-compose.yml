@@ -10,20 +10,21 @@ services:
   flask_app:
     build: './flask_app'
     ports:
-      - "5001:5001"
+      - "5001:5000"
     depends_on:
       - elasticsearch
-    networks:
-      - prova
+    restart: always
+    expose:
+      - "5001"
 
-  worker:
-    build: './simple_worker'
+  consumer:
+    build: './consumer'
     depends_on:
       - flask_app
-    networks:
-      - prova
+    restart: always
 
   elasticsearch:
+    restart: always
     image: docker.elastic.co/elasticsearch/elasticsearch:7.13.1
     environment:
       - xpack.security.enabled=false
@@ -37,17 +38,9 @@ services:
         hard: 65536
     cap_add:
       - IPC_LOCK
-    volumes:
-      - elasticsearch-data:/usr/share/elasticsearch/data
     ports:
       - "9200:9200"
       - "9300:9300"
-    networks:
-      - prova
-
-networks:
-  prova:
-
-volumes:
-  elasticsearch-data:
-    driver: local
+    expose:
+      - "9200"
+      - "9300"

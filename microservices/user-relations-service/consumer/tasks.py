@@ -1,17 +1,16 @@
-from glob import escape
 import pika
 from dotenv import load_dotenv
 from os import path, environ
-from elasticsearch import Elasticsearch, exceptions
+from neo4j import GraphDatabase
 import json
 from time import sleep
-
+from service.user_relations_service import UserRelationsService
 
 IDEA_STATE_CREATE = 'CREATE'
 IDEA_STATE_UPDATE = 'UPDATE'
 IDEA_STATE_DELETE = 'DELETE'
 
-global es
+global graph_db
 
 
 def handle_delivery(channel, method, header, body):
@@ -21,36 +20,56 @@ def handle_delivery(channel, method, header, body):
     data = json.loads(body)
     channel.basic_ack(delivery_tag=method.delivery_tag)
     if data['state'] == IDEA_STATE_CREATE:
-        es.index(index='idea',
-                 id=data['_id'],
-                 body={'idea_name': data['idea_name']},
-                 request_timeout=10)
+        print('Create user relation with idea')
+        print('Send message to search service')
+        channel.exchange_declare(
+            exchange='idea',
+            exchange_type='direct'
+        )
+        channel.basic_publish(
+            exchange='idea',
+            routing_key='idea.index',
+            body=body)
     elif data['state'] == IDEA_STATE_UPDATE:
-        es.index(index='idea',
-                 id=data['_id'],
-                 body={'idea_name': data['idea_name']},
-                 request_timeout=10)
+        print('Modify user relation with idea')
+        print('Send message to search service')
+        channel.exchange_declare(
+            exchange='idea',
+            exchange_type='direct'
+        )
+        channel.basic_publish(
+            exchange='idea',
+            routing_key='idea.index',
+            body=body)
     elif data['state'] == IDEA_STATE_DELETE:
-        es.delete(index='idea',
-                  id=data['_id'])
+        print('Delete user relation with idea')
+        print('Send message to search service')
+        channel.exchange_declare(
+            exchange='idea',
+            exchange_type='direct'
+        )
+        channel.basic_publish(
+            exchange='idea',
+            routing_key='idea.index',
+            body=body)
     else:
         pass
 
 
-def connect_elasticsearch(**kwargs):
-    sleep(5)
-    es = None
+def connect_neo4j():
+    conn = None
     while 1:
         try:
-            es = Elasticsearch(
-                "http://elasticsearch.search-service_prova:9200")
+            conn = GraphDatabase.driver(
+                'bolt://localhost:7687', auth=('neo4j', 'mypass'))
         except Exception as e:
-            print("Can't connect to Elasticsearch: ", e)
+            print("Can't connecto to Neo4J: ", e)
+            sleep(3)
             continue
         else:
-            print("Connected to Elasticsearch", es.ping())
-        break
-    return es
+            print("Connected to Neo4J")
+            break
+    return conn
 
 
 def connect_rabbitmq():
@@ -62,18 +81,19 @@ def connect_rabbitmq():
                     'RABBITMQ_URI')))
         except Exception as e:
             print("Can't connect to Rabbitmq: ", e)
+            sleep(3)
             continue
         else:
             print("Connected to Rabbitmq")
-        break
+            break
     return conn
 
 
 def main():
-    global es
-    es = connect_elasticsearch()
+    global graph_db
+    graph_db = UserRelationsService(connect_neo4j())
     connection = connect_rabbitmq()
-    queue = 'index-seach-idea'
+    queue = 'user-relation-idea'
     channel = connection.channel()
     channel.queue_declare(queue=queue)
     channel.exchange_declare(
@@ -83,7 +103,7 @@ def main():
     channel.queue_bind(
         exchange="idea",
         queue=queue,
-        routing_key="idea.index")
+        routing_key="idea.operation")
     channel.basic_consume(queue, handle_delivery)
 
     print('Subscribed to ' + queue + ', waiting for messages...')

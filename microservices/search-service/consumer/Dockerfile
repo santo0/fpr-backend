@@ -9,8 +9,8 @@ RUN \
  python3 -m pip install -r requirements.txt --no-cache-dir
 
 #COPY app.py /app.py
-ADD . /simple_worker
-WORKDIR /simple_worker
+ADD . /consumer
+WORKDIR /consumer
 
 ENTRYPOINT ["python3", "tasks.py"]
 

@@ -1,4 +1,0 @@
-pika
-SQLAlchemy
-psycopg2
-python-dotenv

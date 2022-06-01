@@ -1,0 +1,32 @@
+version: "3.3"  # optional since v1.27.0
+services:
+  #ubuntu:
+  #  image: ubuntu
+  #  restart: on-failure
+  #  command: ["sleep","infinity"]
+  #  networks:
+  #    - prova
+
+  flask_app:
+    build: './flask_app'
+    ports:
+      - "5002:5000"
+    depends_on:
+      - neo4j
+    restart: always
+    expose:
+      - "5001"
+
+  consumer:
+    build: './consumer'
+    depends_on:
+      - flask_app
+    restart: always
+
+  neo4j:
+    image: neo4j:4.0.3
+    environment:
+      - NEO4J_AUTH=neo4j/mypass
+    ports:
+      - "7474:7474"
+      - "7687:7687"

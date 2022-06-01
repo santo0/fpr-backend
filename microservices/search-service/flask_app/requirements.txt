@@ -1,4 +1,3 @@
 Flask
 python-dotenv
-pika
-elasticsearch
+elasticsearch==7.13.1

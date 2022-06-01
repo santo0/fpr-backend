@@ -7,13 +7,8 @@ services:
       - "5000:5000"
     depends_on:
       - postgres
-
-
-  worker:
-    build: './simple_worker'
-    depends_on:
-      - flask_app
-
+    expose:
+      - "5000"
 
   postgres:
     image: postgres
@@ -25,6 +20,8 @@ services:
       - '5432:5432'
     volumes: 
       - db:/var/lib/postgresql/idea_data
+    expose:
+      - "5432"
 
 volumes:
   db:
