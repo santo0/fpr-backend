@@ -1,35 +1,14 @@
 version: "3.3"  # optional since v1.27.0
 services:
   flask_app:
+    restart: always
     build: './flask_app'
     ports:
       - "5000:5000"
     depends_on:
-      - rabbit
-      - mongodb_container
-
-  rabbit:
-    hostname: rabbit
-    image: "rabbitmq:3-management"
-    environment:
-      - RABBITMQ_DEFAULT_USER=admin
-      - RABBITMQ_DEFAULT_PASS=mypass
-    ports:
-      - "15672:15672"
-      - "5672:5672"
-
-  worker:
-    build: './simple_worker'
-    user: nobody
-    depends_on:
-      - rabbit
-      - flask_app
-      - mongodb_container
-
-  mongodb_container:
-    image: mongo:latest
-    ports:
-      - "27017:27017"
+      - postgres
+    expose:
+      - "5000"
 
   postgres:
     image: postgres
@@ -41,11 +20,8 @@ services:
       - '5432:5432'
     volumes: 
       - db:/var/lib/postgresql/idea_data
-
-networks: 
-  default: 
-    external: 
-      name: fpr-test-network
+    expose:
+      - "5432"
 
 volumes:
   db:
